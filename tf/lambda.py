@@ -25,3 +25,4 @@ def lambda_handler(event, context):
         )
         
     return {"status": "Message sent to SQS successfully"}
+
