@@ -22,7 +22,7 @@ resource "aws_lambda_function" "lambda" {
   environment {
     variables = {
       region     = "eu-north-1"
-      account_id = "590183919160"
+      account_id = ""
     }
   }
 }
