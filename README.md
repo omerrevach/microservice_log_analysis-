@@ -1,5 +1,8 @@
 # microservice_log_analysis
 
+## I added a cool animation to show how the flow of the UML goes. Enter this in the browser --> https://omerrevach.github.io/microservice_log_analysis-/
+
+
 ## Project Summary:
 
    - User uploads a log file via a web app.
