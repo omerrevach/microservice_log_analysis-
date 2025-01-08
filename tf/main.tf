@@ -6,23 +6,23 @@ resource "aws_s3_bucket_notification" "aws_lambda_trigger" {
   bucket = aws_s3_bucket.bucket.id
   lambda_function {
     lambda_function_arn = aws_lambda_function.lambda.arn
-    events = ["s3:ObjectCreated:*"]
+    events              = ["s3:ObjectCreated:*"]
   }
 }
 
 resource "aws_lambda_function" "lambda" {
-  filename = "lambda.zip"
+  filename      = "lambda.zip"
   function_name = "S3ToSqsProcessor"
-  role = aws_iam_role.lambda_execution_role.arn
+  role          = aws_iam_role.lambda_execution_role.arn
   handler       = "lambda_function.lambda_handler"
-  runtime = "python3.12"
+  runtime       = "python3.12"
 
-  timeout = 15
+  timeout     = 15
   memory_size = 1024
   environment {
     variables = {
-       region = "eu-north-1"
-       account_id = "" 
+      region     = "eu-north-1"
+      account_id = "590183919160"
     }
   }
 }
@@ -37,9 +37,10 @@ resource "aws_lambda_permission" "permission" {
 
 resource "aws_iam_policy" "lambda_sqs_policy" {
   policy = jsonencode({
+    Version = "2012-10-17"
     Statement = [{
-      Effect = "Allow"
-      Action = ["sqs:SendMessage"]
+      Effect   = "Allow"
+      Action   = ["sqs:SendMessage"]
       Resource = aws_sqs_queue.log_processing_queue.arn
     }]
   })
