@@ -14,15 +14,14 @@ resource "aws_lambda_function" "lambda" {
   filename      = "lambda.zip"
   function_name = "S3ToSqsProcessor"
   role          = aws_iam_role.lambda_execution_role.arn
-  handler       = "lambda_function.lambda_handler"
+  handler       = "lambda.lambda_handler"
   runtime       = "python3.12"
+  timeout       = 15
+  memory_size   = 1024
 
-  timeout     = 15
-  memory_size = 1024
   environment {
     variables = {
-      region     = "eu-north-1"
-      account_id = ""
+      SQS_QUEUE_URL = aws_sqs_queue.log_processing_queue.id
     }
   }
 }
@@ -35,15 +34,10 @@ resource "aws_lambda_permission" "permission" {
   source_arn    = aws_s3_bucket.bucket.arn
 }
 
-resource "aws_iam_policy" "lambda_sqs_policy" {
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["sqs:SendMessage"]
-      Resource = aws_sqs_queue.log_processing_queue.arn
-    }]
-  })
+resource "aws_sqs_queue" "log_processing_queue" {
+  name                        = "log-processing-queue.fifo"
+  fifo_queue                  = true
+  content_based_deduplication = true
 }
 
 resource "aws_iam_role" "lambda_execution_role" {
@@ -61,13 +55,51 @@ resource "aws_iam_role" "lambda_execution_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
-  role       = aws_iam_role.lambda_execution_role.name
-  policy_arn = aws_iam_policy.lambda_sqs_policy.arn
+resource "aws_iam_policy" "lambda_sqs_s3_policy" {
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage",
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes",
+          "sqs:GetQueueUrl"
+        ]
+        Resource = aws_sqs_queue.log_processing_queue.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "${aws_s3_bucket.bucket.arn}",
+          "${aws_s3_bucket.bucket.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:CreateLogGroup"
+        ]
+        Resource = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${aws_lambda_function.lambda.function_name}:*"
+      }
+    ]
+  })
 }
 
-resource "aws_sqs_queue" "log_processing_queue" {
-  name                        = "log-processing-queue.fifo"
-  fifo_queue                  = true
-  content_based_deduplication = true
+resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
+  role       = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.lambda_sqs_s3_policy.arn
+}
+
+data "aws_caller_identity" "current" {}
+variable "aws_region" {
+  default = "eu-north-1"
 }
