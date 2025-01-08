@@ -10,3 +10,12 @@
    - The user receives an email notification with a summary of the results.
 
 ### Key Components: EKS, SQS (FIFO), S3, DynamoDB, SES, Python.
+
+S3 Event Trigger → Lambda → SQS → Backend
+Flow Explanation:
+
+    User Uploads a File to S3.
+    S3 Event Notification triggers SQS automatically.
+    Python Log Processor receives the message from SQS.
+    ✅ S3 Automatically Includes File Metadata in the Event Message.
+    The Processor extracts error data from the message itself instead of downloading the whole file.
