@@ -2,10 +2,23 @@
 <html>
 <head>
     <title>UML Video Presentation</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+        }
+    </style>
 </head>
 <body>
-    <h1>UML Video Presentation</h1>
-    <video width="100%" height="auto" controls autoplay muted playsinline>
+    <video controls autoplay muted playsinline>
         <source src="UML.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
