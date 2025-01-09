@@ -1,7 +1,8 @@
 import boto3
+import requests
 
 sqs = boto3.client('sqs')
-queue_url = "https://sqs.eu-north-1.amazonaws.com/590183919160/log-processing-queue.fifo"
+# extractor_service_url = 
 
 def send_message():
     try:

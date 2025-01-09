@@ -1,0 +1,3 @@
+Received Message Body: {"s3_bucket": "store-users-log-files", "file_key": "test1.log"}
+Message Attributes: {'SenderId': 'AROAYS2NT5Y4H4OPWA2Z4:S3ToSqsProcessor', 'ApproximateFirstReceiveTimestamp': '1736418356235', 'ApproximateReceiveCount': '1', 'SentTimestamp': '1736418307744', 'SequenceNumber': '18891267160492015616', 'MessageDeduplicationId': 'store-users-log-files-test1.log', 'MessageGroupId': 'log-processing-group', 'AWSTraceHeader': 'Root=1-677fa403-2f909ea172d6764c20360998;Parent=2020d2aad2fb4a0f;Sampled=0;Lineage=1:fd4920e8:0'}
+Message successfully processed and deleted.

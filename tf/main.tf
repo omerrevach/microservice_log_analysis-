@@ -1,11 +1,7 @@
-# ------------------------------
-# S3 Bucket for Log Storage
-# ------------------------------
 resource "aws_s3_bucket" "bucket" {
   bucket = "store-users-log-files"
 }
 
-# S3 Event Notification to Trigger Lambda on File Upload
 resource "aws_s3_bucket_notification" "aws_lambda_trigger" {
   bucket = aws_s3_bucket.bucket.id
   lambda_function {
@@ -14,9 +10,6 @@ resource "aws_s3_bucket_notification" "aws_lambda_trigger" {
   }
 }
 
-# ------------------------------
-# Lambda Function Configuration
-# ------------------------------
 resource "aws_lambda_function" "lambda" {
   filename      = "lambda.zip"
   function_name = "S3ToSqsProcessor"
@@ -33,8 +26,6 @@ resource "aws_lambda_function" "lambda" {
   }
 }
 
-
-# Lambda Permission for S3 to Trigger Lambda
 resource "aws_lambda_permission" "permission" {
   statement_id  = "AllowS3Invoke"
   action        = "lambda:InvokeFunction"
@@ -43,18 +34,12 @@ resource "aws_lambda_permission" "permission" {
   source_arn    = aws_s3_bucket.bucket.arn
 }
 
-# ------------------------------
-# SQS Queue Configuration
-# ------------------------------
 resource "aws_sqs_queue" "log_processing_queue" {
   name                        = "log-processing-queue.fifo"
   fifo_queue                  = true
   content_based_deduplication = true
 }
 
-# ------------------------------
-# IAM Role for Lambda with SQS & S3 Permissions
-# ------------------------------
 resource "aws_iam_role" "lambda_execution_role" {
   name = "lambda_execution_role"
 
@@ -70,14 +55,10 @@ resource "aws_iam_role" "lambda_execution_role" {
   })
 }
 
-# ------------------------------
-# IAM Policy with Full Permissions (S3 + SQS + CloudWatch)
-# ------------------------------
 resource "aws_iam_policy" "lambda_sqs_s3_policy" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # ✅ Allow sending and managing messages in SQS FIFO Queue
       {
         Effect = "Allow"
         Action = [
@@ -87,9 +68,8 @@ resource "aws_iam_policy" "lambda_sqs_s3_policy" {
           "sqs:GetQueueAttributes",
           "sqs:GetQueueUrl"
         ]
-        Resource = aws_sqs_queue.log_processing_queue.arn  # ✅ FIXED HERE (Resource instead of SQS_QUEUE_URL)
+        Resource = aws_sqs_queue.log_processing_queue.arn
       },
-      # ✅ Allow listing and reading from the S3 bucket
       {
         Effect = "Allow"
         Action = [
@@ -101,7 +81,6 @@ resource "aws_iam_policy" "lambda_sqs_s3_policy" {
           "${aws_s3_bucket.bucket.arn}/*"
         ]
       },
-      # ✅ Allow CloudWatch Logging for Lambda (Fixed Resource with Correct Account ID)
       {
         Effect = "Allow"
         Action = [
@@ -115,7 +94,6 @@ resource "aws_iam_policy" "lambda_sqs_s3_policy" {
   })
 }
 
-# Attach IAM Policy to the Lambda Execution Role
 resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
   role       = aws_iam_role.lambda_execution_role.name
   policy_arn = aws_iam_policy.lambda_sqs_s3_policy.arn

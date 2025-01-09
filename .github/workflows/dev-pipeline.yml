@@ -1,0 +1,50 @@
+name: Python CI
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  security-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Checkov
+        run: |
+          pip install checkov
+
+      - name: Run Checkov Security Scan
+        run: |
+          checkov -d .
+
+  terraform-check:
+    runs-on: ubuntu-latest
+    needs: security-check
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Checkov and TFLint
+        run: |
+          pip install checkov
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+
+      - name: Run Checkov on Terraform
+        run: |
+          checkov -d ./tf
+
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint -f compact ./tf
