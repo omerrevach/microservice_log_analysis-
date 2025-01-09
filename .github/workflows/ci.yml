@@ -24,7 +24,7 @@ jobs:
         run: |
           checkov -d .
 
-  lint:
+  terraform-check:
     runs-on: ubuntu-latest
     needs: security-check
     steps:
@@ -35,12 +35,16 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: Install Checkov and TFLint
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install checkov
+          curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
 
-      - name: Run Pylint
+      - name: Run Checkov on Terraform
         run: |
-          pip install pylint
-          pylint $(git ls-files '*.py')
+          checkov -d ./tf
+
+      - name: Run TFLint
+        run: |
+          tflint --init
+          tflint -f compact ./tf
