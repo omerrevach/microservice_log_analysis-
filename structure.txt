@@ -80,3 +80,81 @@ log-analysis-app/
         DynamoDB Table (dynamodb.tf)
         IAM Roles and Permissions (iam.tf)
 
+
+
+📦 Service 1: Message Receiver Service (SQS Consumer)
+🎯 Goal: Poll the SQS FIFO Queue, extract the message, and forward it to the Log Extractor Service.
+What to Learn (Topics + Hands-On Tasks):
+
+    Python Basics (If Needed)
+        Variables, loops, functions, error handling (try-except).
+        Task: Write a basic Python script with error handling.
+
+    Python Flask for Microservices (REST APIs)
+        What: Flask for handling HTTP requests between services.
+        Hands-On Task: Create a Flask app that receives a POST request.
+
+    AWS Boto3 for SQS Integration
+        What: How to use boto3 for:
+            receive_message() → Polling FIFO SQS.
+            delete_message() → Deleting processed messages.
+        Hands-On Task: Create a Python script that polls SQS and prints message content.
+
+    Dockerizing the SQS Service
+        What: Learn to write a Dockerfile for the service.
+        Hands-On Task: Containerize the SQS Service and run it with docker run.
+
+✅ Key Skills Needed:
+
+    Python (boto3, Flask)
+    SQS Basics (FIFO Queues)
+    Docker Basics (Containerize a Flask app)
+
+📦 Service 2: Log Extractor Service (Log Processing)
+🎯 Goal: Receive the S3 file path from Service 1, download the log file from S3, extract error messages using Regex, and forward results to Service 3.
+What to Learn (Topics + Hands-On Tasks):
+
+    Python Boto3 for S3 Integration
+        What: Learn how to:
+            download_file() from S3.
+            get_object() for reading file contents without downloading.
+        Hands-On Task: Write a Python script to download a file from S3 and print the contents.
+
+    Python Regex (Error Extraction)
+        What: Use the re module for pattern matching.
+        Hands-On Task: Write a Python script to detect errors like "ERROR" and "Exception" in a text file.
+
+    Inter-Service Communication (Flask POST Requests)
+        What: Learn how to send data between services using HTTP POST requests.
+        Hands-On Task: Send processed error data from Service 2 to Service 3 using requests.post().
+
+    Dockerizing the Log Extractor Service
+        Hands-On Task: Write a Dockerfile for the Log Extractor Service and test it.
+
+✅ Key Skills Needed:
+
+    Python (boto3, re for regex, Flask)
+    S3 Integration
+    File Handling and Regex Matching
+    Docker Basics
+
+📦 Service 3: Result Storage Service (DynamoDB Writer)
+🎯 Goal: Receive the error summary from Service 2 and store it in DynamoDB.
+What to Learn (Topics + Hands-On Tasks):
+
+    Python Boto3 for DynamoDB Integration
+        What: Learn how to:
+            put_item() for storing data.
+            get_item() for fetching results.
+        Hands-On Task: Write a Python script that writes data to DynamoDB.
+
+    Error Handling and Validation
+        What: Validate incoming data before writing it to DynamoDB.
+        Hands-On Task: Create a Python function that validates input data before writing to DynamoDB.
+
+    (Optional) SES for Email Notifications
+        What: Learn how to send an email using SES.
+        Hands-On Task: Send a test email after saving data to DynamoDB.
+
+    Dockerizing the Result Storage Service
+        Hands-On Task: Write a Dockerfile and run the container.

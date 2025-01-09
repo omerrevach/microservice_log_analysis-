@@ -1,28 +1,32 @@
 import boto3
-import json
 import os
+import json
 
 sqs = boto3.client('sqs')
-queue_url = f"https://sqs.{os.getenv('region')}.amazonaws.com/{os.getenv('account_id')}/log-processing-queue.fifo"
+queue_url = os.getenv('SQS_QUEUE_URL')
+
+if not queue_url:
+    raise ValueError("ERROR: SQS_QUEUE_URL is not set correctly!")
 
 def lambda_handler(event, context):
-    """Triggered by S3, sends a message to SQS."""
-    for record in event['Records']:
-        bucket_name = record['s3']['bucket']['name']
-        file_key = record['s3']['object']['key']
+    try:
+        for record in event['Records']:
+            bucket_name = record['s3']['bucket']['name']
+            file_key = record['s3']['object']['key']
 
-        # Prepare message payload for SQS
-        message_body = {
-            "s3_bucket": bucket_name,
-            "file_key": file_key
-        }
+            message_body = {
+                "s3_bucket": bucket_name,
+                "file_key": file_key
+            }
 
-        # Send message to SQS FIFO queue
-        response = sqs.send_message(
-            QueueUrl=queue_url,
-            MessageBody=json.dumps(message_body),
-            MessageGroupId="log-processing-group"
-        )
-        
-    return {"status": "Message sent to SQS successfully"}
+            response = sqs.send_message(
+                QueueUrl=queue_url,
+                MessageBody=json.dumps(message_body),
+                MessageGroupId="log-processing-group",
+                MessageDeduplicationId=f"{bucket_name}-{file_key}"
+            )
+            print(f"✅ Message Sent Successfully: {response['MessageId']}")
 
+    except Exception as e:
+        print(f"Error sending message to SQS: {e}")
+        raise e

@@ -1,0 +1,32 @@
+✅ How SQS Messages Are Returned:
+
+When you call sqs.receive_message() using Boto3, it returns a dictionary (JSON-like structure):
+
+{
+    "Messages": [
+        {
+            "MessageId": "1234abcd-5678-efgh",
+            "ReceiptHandle": "abcdef123456==",
+            "Body": "Sample message body content",
+            "Attributes": {
+                "SentTimestamp": "1678901234567"
+            },
+            "MessageAttributes": {
+                "ErrorType": {
+                    "StringValue": "CRITICAL",
+                    "DataType": "String"
+                }
+            }
+        }
+    ]
+}
+
+Explanation:
+
+    "Messages" → A list of messages returned from the queue.
+    Each message is a dictionary containing:
+        "MessageId" → Unique identifier for the message.
+        "ReceiptHandle" → Required for deleting the message after processing.
+        "Body" → The actual content of the message.
+        "Attributes" → System-level message attributes (e.g., timestamps).
+        "MessageAttributes" → Custom attributes you define when sending the message.

@@ -2,7 +2,7 @@ import boto3
 import os
 
 sqs = boto3.client('sqs')
-queue_url = os.environ.get('SQS_QUEUE_URL')
+queue_url = "https://sqs.eu-north-1.amazonaws.com/590183919160/log-processing-queue.fifo"
 
 def get_message():
     try:
@@ -31,4 +31,5 @@ def get_message():
     
     except Exception as e:
         print(f'Error receiving the message: {e}')
-    
+
+get_message()
